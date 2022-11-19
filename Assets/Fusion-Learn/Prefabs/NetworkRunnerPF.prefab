@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2440979197320910230}
   - component: {fileID: 4547533430764660562}
-  - component: {fileID: 4707809437044770212}
+  - component: {fileID: 2615513828812616664}
   m_Layer: 0
   m_Name: NetworkRunnerPF
   m_TagString: Untagged
@@ -31,7 +31,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &4547533430764660562
 MonoBehaviour:
@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: -1199893898, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &4707809437044770212
+--- !u!114 &2615513828812616664
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -57,5 +57,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4241f0f8c3479f24c96d378f44742a4e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerprefab: {fileID: 5246897853900193612, guid: 9f2dfeb96f2a73c46bc9cd53cf564ef1,
+  playerprefab: {fileID: 6949450151132815203, guid: 9f2dfeb96f2a73c46bc9cd53cf564ef1,
     type: 3}

@@ -10,6 +10,9 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     // We're gonna need a network player so create an instance for use later
     public NetworkPlayer playerprefab;
 
+    // Add component
+    CharacterInputHandler characterInputHandler;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -28,7 +31,14 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnInput(NetworkRunner runner, NetworkInput input) 
     {
-            
+        // Check to make sure we're getting the correct character control from the right place
+        // Get our Local players input handler
+        if (characterInputHandler == null && NetworkPlayer.Local != null)
+            characterInputHandler = NetworkPlayer.Local.GetComponent<CharacterInputHandler>();
+
+        // Quick check to make sure we received the handler - the set our input handler - allows us to move our character
+        if (characterInputHandler != null)
+            input.Set(characterInputHandler.GetNetworkInput());
     }
 
     public void OnConnectedToServer(NetworkRunner runner) { Debug.Log("OnConnectedToServer"); }
