@@ -5,9 +5,6 @@ using UnityEngine;
 
 public class CharacterMovementHandler : NetworkBehaviour
 {
-    Vector2 viewInput;
-    float cameraRotationX = 0;
-
     NetworkCharacterControllerPrototypeCustom networkCharacterControllerPrototypeCustom;
     Camera localCamera;
 
@@ -17,20 +14,9 @@ public class CharacterMovementHandler : NetworkBehaviour
         localCamera = GetComponentInChildren<Camera>();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is triggered locally only, don't use for network functions
     void Update()
     {
-        //=== APPLY ROTATION TO CAMERA ===
-        // Get the view rotation from input
-        cameraRotationX += viewInput.y * Time.deltaTime * networkCharacterControllerPrototypeCustom.viewUpDownRotationSpeed;
-        cameraRotationX = Mathf.Clamp(cameraRotationX, -90, 90);    // Clamp the view range - simulates realistic human view angles
-        localCamera.transform.localRotation = Quaternion.Euler(cameraRotationX, 0, 0);  // Apply
     }
 
     // Network Update
@@ -40,23 +26,35 @@ public class CharacterMovementHandler : NetworkBehaviour
         if (GetInput(out NetworkInputData networkInputData))
         {
             // Rotate
-            networkCharacterControllerPrototypeCustom.Rotate(networkInputData.rotationInput);
+            transform.forward = networkInputData.aimForwardVector;      // May cause 180 degrees rotation snapping, just use network lerp if this is an issue later
+            
+            // Cancel Rotation on the X Axis!!  No tilting!
+            Quaternion rotation = transform.rotation;
+            rotation.eulerAngles = new Vector3(0f, rotation.eulerAngles.y, rotation.eulerAngles.z);
+            transform.rotation = rotation;
 
             // Move
             Vector3 moveDirection = transform.forward * networkInputData.movementInput.y +  // Back n Forward
                                     transform.right * networkInputData.movementInput.x;     // Strafe
-            
+
             moveDirection.Normalize();
             networkCharacterControllerPrototypeCustom.Move(moveDirection);
 
             // Jump
             if (networkInputData.isJumpPressed)
                 networkCharacterControllerPrototypeCustom.Jump();
+
+            // Check if we've fallen of the map
+            CheckFallRespawn();
         }
     }
 
-    public void SetViewInputVector(Vector2 viewInput)
+
+    // Checks to see if the player has fell off the map and respawns it
+    void CheckFallRespawn()
     {
-        this.viewInput = viewInput;
+        if (transform.position.y < -12)
+            transform.position = Utils.GetRandomSpawnPoint();
     }
+
 }

@@ -9,7 +9,7 @@ public class CharacterInputHandler : MonoBehaviour
     bool isJumpButtonPressed = false;
 
     // Reference our character movement handler
-    CharacterMovementHandler characterMovementHandler;
+    LocalCameraHandler localCameraHandler;
 
     private void Start()
     {
@@ -20,7 +20,7 @@ public class CharacterInputHandler : MonoBehaviour
 
     private void Awake()
     {
-        characterMovementHandler = GetComponent<CharacterMovementHandler>();
+        localCameraHandler = GetComponentInChildren<LocalCameraHandler>();
     }
 
 
@@ -31,14 +31,16 @@ public class CharacterInputHandler : MonoBehaviour
         viewInputVector.x = Input.GetAxis("Mouse X");
         viewInputVector.y = Input.GetAxis("Mouse Y") * -1;      // INVERT the mouse look with "* -1"
 
-        characterMovementHandler.SetViewInputVector(viewInputVector);   // Handle up and down view with mouse
-
         // Move Input
         moveInputVector.x = Input.GetAxis("Horizontal");
         moveInputVector.y = Input.GetAxis("Vertical");
 
         // Handle Jump
-        isJumpButtonPressed = Input.GetButtonDown("Jump");
+        if (Input.GetButtonDown("Jump"))
+            isJumpButtonPressed = true;
+
+        // Set View
+        localCameraHandler.SetViewInputVector(viewInputVector);
     }
 
 
@@ -52,9 +54,10 @@ public class CharacterInputHandler : MonoBehaviour
         // ready for the data we simply pass it along by returning the networkInputData
 
         NetworkInputData networkInputData = new NetworkInputData();
-        networkInputData.rotationInput = viewInputVector.x;     // View data (only use .x because network players dont need to know about each other looking up and down)
+        networkInputData.aimForwardVector = localCameraHandler.transform.forward;   // Aim data
         networkInputData.movementInput = moveInputVector;       // Move data
         networkInputData.isJumpPressed = isJumpButtonPressed;   // Jump data
+        isJumpButtonPressed = false;                            // RESET the jump trigger 
         return networkInputData;
     }
 }

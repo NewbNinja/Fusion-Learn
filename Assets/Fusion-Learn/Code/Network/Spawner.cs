@@ -13,12 +13,6 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     // Add component
     CharacterInputHandler characterInputHandler;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Spawn players in the world
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player) 
     { 

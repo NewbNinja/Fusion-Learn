@@ -35,13 +35,20 @@ public class NetworkRunnerHandler : MonoBehaviour
         if (sceneManager == null)
             sceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
 
-        // Start Game
         runner.ProvideInput = true;
+
+
+        /* IMPORTANT NOTE:
+         * The StartGame call can have various arguments which can be found 
+         * here:  https://doc.photonengine.com/en-us/fusion/current/manual/matchmaking#introduction
+         * 
+        */
         return runner.StartGame(new StartGameArgs 
         { 
             GameMode = gameMode,
             Address = address,
             Scene = scene,
+            PlayerCount = 20,
             SessionName = "TestRoom",
             Initialized = initialized,
             SceneManager = sceneManager
