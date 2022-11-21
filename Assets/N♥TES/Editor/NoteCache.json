@@ -1,0 +1,22 @@
+{
+    "notes": [
+        {
+            "noteText": "NRH spawns our NetworkRunner Prefab which spawns our NetworkPlayer Prefab",
+            "show": true,
+            "typeName": "UnityEngine.GameObject",
+            "GlobalObjectSerialization": "GlobalObjectId_V1-2-99c9720ab356a0642a771bea13969a05-1246486262-0"
+        },
+        {
+            "noteText": "KNOWN ISSUES:   Sometimes the NetworkPlayer.cs script won't attach to this and it won't tell you why.  Happened already.  Just delete the script from here, remove the Network Object, I had to copy the code from the NetworkPlayer.cs script and delete it, then remake it, paste it back and then reattach it.   Absolute fart on, but it works again now!\n",
+            "show": true,
+            "typeName": "UnityEngine.GameObject",
+            "GlobalObjectSerialization": "GlobalObjectId_V1-1-9f2dfeb96f2a73c46bc9cd53cf564ef1-6313059841689226126-0"
+        },
+        {
+            "noteText": "USAGE:   This script controls the NetworkCharacterControllerPrototypeCustom.cs script",
+            "show": true,
+            "typeName": "UnityEditor.MonoScript",
+            "GlobalObjectSerialization": "GlobalObjectId_V1-1-78a7f305fa9d5304c9f24c326a843f3e-11500000-0"
+        }
+    ]
+}
