@@ -29,14 +29,14 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
         }
     }
 
+    // NETWORK MOVEMENT INPUT
     public void OnInput(NetworkRunner runner, NetworkInput input) 
     {
-        // Check to make sure we're getting the correct character control from the right place
-        // Get our Local players input handler
+        // Handle our LOCAL players input (my client only)
         if (characterInputHandler == null && NetworkPlayer.Local != null)
             characterInputHandler = NetworkPlayer.Local.GetComponent<CharacterInputHandler>();
 
-        // Quick check to make sure we received the handler - the set our input handler - allows us to move our character
+        // Confirm we have our input handler - passed from CharacterInputHandler.cs
         if (characterInputHandler != null)
             input.Set(characterInputHandler.GetNetworkInput());
     }
