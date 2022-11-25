@@ -14,6 +14,12 @@ public static class Utils
         // We do this so that the camera ignores the local players prefab so that is doesn't block our view
         // We use this in NetworkPlayer.cs
         foreach (Transform trans in transform.GetComponentsInChildren<Transform>(true))
-            trans.gameObject.layer = layerNumber;
+        {
+            // Only setting the Model (body eye and pupil) to invisible as we want to see gun
+            if (trans.gameObject.name == "Model" ||
+                trans.gameObject.name == "Body" ||
+                trans.gameObject.name == "Eye" ||
+                trans.gameObject.name == "Pupil") { trans.gameObject.layer = layerNumber; }
+        }
     }
 }
