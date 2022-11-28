@@ -8,22 +8,31 @@ public class WeaponHandler : NetworkBehaviour
     // This is a FUSION network function which updates all clients
     [Networked(OnChanged = nameof(OnFireChanged))]
     public bool isFiring { get; set; }
-    public ParticleSystem fireParticleSystem;
+
+    public ParticleSystem fireParticleSystem;   // Muzzle flash particles
+    public Transform aimPoint;                  // Position we're firing from
+    public LayerMask collisionLayers;           // Holds all collision layers 
 
     [SerializeField] private float fireDelay = 0.15f;
     float lastTimeFired = 0;        // Fire Rate
 
+    // Other Components
+    HPHandler hpHandler;
 
-    // Start is called before the first frame update
-    void Start()
+
+    void Awake()
     {
-        
+        hpHandler = GetComponent<HPHandler>();
     }
 
     // Fusion refers to this as FUN -- the Fixed Update Network func - works like local Update but for the network
     // STEP 1: CHECK IF WE'RE FIRING
     public override void FixedUpdateNetwork()
     {
+        // Don't allow us to fire if we're dead
+        if (hpHandler.isDead)
+            return;
+
         Debug.Log("WeaponHandler.FUN() called");
         // Get the input from the network
         if (GetInput(out NetworkInputData networkInputData))
@@ -42,7 +51,54 @@ public class WeaponHandler : NetworkBehaviour
         if (Time.time - lastTimeFired < fireDelay)
             return;
 
-        StartCoroutine(FireEffectCoRoutine());      // Fire (tells the server we're firing + muzzle flash)
+        StartCoroutine(FireEffectCoRoutine());      // Fire (tells server we're firing + Plays the muzzle flash particle system)
+
+        // SHOOTING using Raycasts and Lag Compensation
+        Runner.LagCompensation.Raycast( aimPoint.position,          // Our origin - where we are firing from
+                                        aimForwardVector,           // Aim direction
+                                        100,                        // How long can we fire - distance value
+                                        Object.InputAuthority,      // Who has authority for this raycast (our player authority)
+                                        out var hitInfo,            // Receive some hit information
+                                        collisionLayers,            // Choose which colliders we want to process
+                                        HitOptions.IncludePhysX     // Will consider environmental colliders from Unity (so we can hide behind boxes etc)
+                                        );
+
+        float hitDistance = 100;
+        bool isHitOtherPlayer = false;
+
+
+        // ####  COLLISION DETECTION  ####
+        //-----------------------------------------------------------------------------
+        // Stop ray when we hit something
+        if (hitInfo.Distance > 0)
+            hitDistance = hitInfo.Distance;
+
+        // Fusion: Handling Network Hits - We've hit another networked player!
+        if (hitInfo.Hitbox != null)
+        {
+            Debug.Log($"{Time.time} {transform.name} hit Fusion HitBox:  {hitInfo.Hitbox.transform.root.name}");
+
+            // IMPORTANT NOTE:   Only update the health changes on the server (if we have state authority)
+            // Here we assume our network objects have a HPHandler script attached (REQUIRED)
+            if (Object.HasStateAuthority)
+                hitInfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage();
+
+            isHitOtherPlayer = true;
+        }
+
+        // Unity: Handle Unity PhysX Colliders (usually walls, scenery, non-networked objects)
+        else if (hitInfo.Collider != null)
+            Debug.Log($"{Time.time} {transform.name} hit Unity PhysX Collider:  {hitInfo.Collider.transform.name}");
+
+
+        // ### DEBUGGING  - remove later - hit enemy = draw red, else draw green
+        if (isHitOtherPlayer)
+                Debug.DrawRay(aimPoint.position, aimForwardVector * hitDistance, Color.red, 1);
+            else Debug.DrawRay(aimPoint.position, aimForwardVector * hitDistance, Color.green, 1);
+
+        //-----------------------------------------------------------------------------
+
+
         lastTimeFired = Time.time;                  // Record the time we fired for fire rate rule
     }
 
@@ -64,7 +120,7 @@ public class WeaponHandler : NetworkBehaviour
     // Not really a problem if it's slightly delayed
     static void OnFireChanged(Changed<WeaponHandler> changed)
     {
-        Debug.Log($"{Time.time} OnFireChanged value:  {changed.Behaviour.isFiring}");
+        //Debug.Log($"{Time.time} OnFireChanged value:  {changed.Behaviour.isFiring}");
 
         // NOTE:  We can't use this as it is a STATIC function
         // isFiring = true;

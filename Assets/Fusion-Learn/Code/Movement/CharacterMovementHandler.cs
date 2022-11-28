@@ -6,12 +6,18 @@ using UnityEngine;
 public class CharacterMovementHandler : NetworkBehaviour
 {
     NetworkCharacterControllerPrototypeCustom networkCharacterControllerPrototypeCustom;
-    Camera localCamera;
+   // Camera localCamera;
+    HPHandler hpHandler;
+
+    bool isRespawnRequested = false;        // Detects if a respawn request has been called 
+
 
     private void Awake()
     {
         networkCharacterControllerPrototypeCustom = GetComponent<NetworkCharacterControllerPrototypeCustom>();
-        localCamera = GetComponentInChildren<Camera>();
+        hpHandler = GetComponent<HPHandler>();
+        //localCamera = GetComponentInChildren<Camera>();
+
     }
 
     // Update is triggered locally only, don't use for network functions
@@ -22,6 +28,19 @@ public class CharacterMovementHandler : NetworkBehaviour
     // Network Update
     public override void FixedUpdateNetwork()
     {
+        // Don't update our position if we're dead
+        if (Object.HasStateAuthority)
+        {
+            if (isRespawnRequested)
+            {
+                Respawn();
+                return;
+            }
+
+            if (hpHandler.isDead)
+                return;
+        }
+
         // Get the network input data so we can move the character
         if (GetInput(out NetworkInputData networkInputData))
         {
@@ -51,10 +70,40 @@ public class CharacterMovementHandler : NetworkBehaviour
 
 
     // Checks to see if the player has fell off the map and respawns it
-    void CheckFallRespawn()
+    private void CheckFallRespawn()
     {
         if (transform.position.y < -12)
-            transform.position = Utils.GetRandomSpawnPoint();
+        {
+            if (Object.HasStateAuthority)
+            {
+                Debug.Log($"{Time.time}:  CheckFallRespawn() called:   Fell off map at position:  {transform.position}");
+                Respawn();
+            }
+        }
+
     }
+
+    // For external respawn request
+    public void RequestRespawn()
+    {
+        Debug.Log($"{Time.time}:  RequestRespawn() called by:   {transform.root.name}");
+        isRespawnRequested = true;
+    }
+
+
+    // Called when dead
+    private void Respawn()
+    {
+        networkCharacterControllerPrototypeCustom.TeleportToPosition(Utils.GetRandomSpawnPoint());
+        hpHandler.OnRespawned();        // Resets player values to default ready for next life
+        isRespawnRequested = false;
+    }
+
+    public void SetCharacterControllerEnabled(bool isEnabled)
+    {
+        networkCharacterControllerPrototypeCustom.Controller.enabled = isEnabled;
+    }
+
+
 
 }

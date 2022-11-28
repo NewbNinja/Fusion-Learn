@@ -68,7 +68,7 @@ public class CharacterInputHandler : MonoBehaviour
         NetworkInputData networkInputData = new NetworkInputData();
         networkInputData.aimForwardVector = localCameraHandler.transform.forward;   // Aim data
         networkInputData.movementInput = moveInputVector;       // Move data
-        networkInputData.isFirePressed = isFireButtonPressed;   // Jump data
+        networkInputData.isFirePressed = isFireButtonPressed;   // Firing data
         networkInputData.isJumpPressed = isJumpButtonPressed;   // Jump data
 
         isFireButtonPressed = false;                            // RESET the fire1 trigger
