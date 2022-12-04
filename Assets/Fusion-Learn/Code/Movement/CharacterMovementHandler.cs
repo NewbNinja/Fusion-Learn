@@ -8,6 +8,8 @@ public class CharacterMovementHandler : NetworkBehaviour
     NetworkCharacterControllerPrototypeCustom networkCharacterControllerPrototypeCustom;
    // Camera localCamera;
     HPHandler hpHandler;
+    NetworkInGameMessages networkInGameMessages;
+    NetworkPlayer networkPlayer;
 
     bool isRespawnRequested = false;        // Detects if a respawn request has been called 
 
@@ -16,6 +18,8 @@ public class CharacterMovementHandler : NetworkBehaviour
     {
         networkCharacterControllerPrototypeCustom = GetComponent<NetworkCharacterControllerPrototypeCustom>();
         hpHandler = GetComponent<HPHandler>();
+        networkInGameMessages = GetComponent<NetworkInGameMessages>();
+        networkPlayer = GetComponent<NetworkPlayer>();
         //localCamera = GetComponentInChildren<Camera>();
 
     }
@@ -77,6 +81,7 @@ public class CharacterMovementHandler : NetworkBehaviour
             if (Object.HasStateAuthority)
             {
                 Debug.Log($"{Time.time}:  CheckFallRespawn() called:   Fell off map at position:  {transform.position}");
+                networkInGameMessages.SendInGameRPCMessage(networkPlayer.nickName.ToString(), "fell to their death...");
                 Respawn();
             }
         }
