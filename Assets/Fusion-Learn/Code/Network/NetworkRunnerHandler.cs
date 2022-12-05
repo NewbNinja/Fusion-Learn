@@ -14,8 +14,6 @@ public class NetworkRunnerHandler : MonoBehaviour
     NetworkRunner networkRunner;
 
 
-
-
     private void Start()
     {
         // Create our network runner
@@ -27,16 +25,24 @@ public class NetworkRunnerHandler : MonoBehaviour
         Debug.Log($"Server NetworkRunner started.");
     }
 
-    // Check if there are any unity objects we need to consider (objects with colliders on them)
-    protected virtual Task InitializeNetworkRunner(NetworkRunner runner, GameMode gameMode, NetAddress address, SceneRef scene, Action<NetworkRunner> initialized)
+
+    INetworkSceneManager GetSceneManager(NetworkRunner runner)
     {
         // Get the scene manager component - or create one
         var sceneManager = runner.GetComponents(typeof(MonoBehaviour)).OfType<INetworkSceneManager>().FirstOrDefault();
         if (sceneManager == null)
             sceneManager = runner.gameObject.AddComponent<NetworkSceneManagerDefault>();
 
-        runner.ProvideInput = true;
+        return sceneManager;
+    }
 
+
+    // Check if there are any unity objects we need to consider (objects with colliders on them)
+    protected virtual Task InitializeNetworkRunner(NetworkRunner runner, GameMode gameMode, NetAddress address, SceneRef scene, Action<NetworkRunner> initialized)
+    {
+        // Get the scene manager component - or create one
+        var sceneManager = GetSceneManager(runner);
+        runner.ProvideInput = true;
 
         /* IMPORTANT NOTE:
          * The StartGame call can have various arguments which can be found 
@@ -53,5 +59,30 @@ public class NetworkRunnerHandler : MonoBehaviour
             Initialized = initialized,
             SceneManager = sceneManager
         });
+    }
+
+    // Check if there are any unity objects we need to consider (objects with colliders on them)
+    protected virtual Task InitializeNetworkRunnerHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken)
+    {
+        // Get the scene manager component - or create one
+        var sceneManager = GetSceneManager(runner);
+        runner.ProvideInput = true;
+
+        /* IMPORTANT NOTE:
+         * The StartGame call can have various arguments which can be found 
+         * here:  https://doc.photonengine.com/en-us/fusion/current/manual/matchmaking#introduction
+         * 
+        */
+        return runner.StartGame(new StartGameArgs
+        {
+            SceneManager = sceneManager,
+            HostMigrationToken = hostMigrationToken,
+            HostMigrationResume = HostMigrationResume
+        });
+    }
+
+    void HostMigrationResume(NetworkRunner runner)
+    {
+
     }
 }

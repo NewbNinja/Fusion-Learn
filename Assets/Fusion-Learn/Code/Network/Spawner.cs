@@ -40,7 +40,16 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { Debug.Log("OnConnectRequest"); }
     public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
     public void OnDisconnectedFromServer(NetworkRunner runner) { Debug.Log("OnDisconnectedFromServer"); }
-    public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
+    public async void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) 
+    { 
+        Debug.Log($"{Time.time}:  OnHostMigration");
+
+        // Shutdown our current runner
+        await runner.Shutdown(shutdownReason: ShutdownReason.HostMigration);
+
+        // Find NetworkRunnerHandler + begin Host Migration
+        FindObjectOfType<NetworkRunnerHandler>().StartHostMigration(hostMigrationToken);
+    }
     public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
