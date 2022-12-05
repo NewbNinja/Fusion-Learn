@@ -1,6 +1,5 @@
 using Fusion;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponHandler : NetworkBehaviour
@@ -18,11 +17,13 @@ public class WeaponHandler : NetworkBehaviour
 
     // Other Components
     HPHandler hpHandler;
+    NetworkPlayer networkPlayer;
 
 
     void Awake()
     {
         hpHandler = GetComponent<HPHandler>();
+        networkPlayer = GetComponent<NetworkPlayer>();
     }
 
     // Fusion refers to this as FUN -- the Fixed Update Network func - works like local Update but for the network
@@ -54,14 +55,14 @@ public class WeaponHandler : NetworkBehaviour
         StartCoroutine(FireEffectCoRoutine());      // Fire (tells server we're firing + Plays the muzzle flash particle system)
 
         // SHOOTING using Raycasts and Lag Compensation
-        Runner.LagCompensation.Raycast( aimPoint.position,          // Our origin - where we are firing from
-                                        aimForwardVector,           // Aim direction
-                                        100,                        // How long can we fire - distance value
-                                        Object.InputAuthority,      // Who has authority for this raycast (our player authority)
-                                        out var hitInfo,            // Receive some hit information
-                                        collisionLayers,            // Choose which colliders we want to process
-                                        HitOptions.IncludePhysX     // Will consider environmental colliders from Unity (so we can hide behind boxes etc)
-                                        );
+        Runner.LagCompensation.Raycast( aimPoint.position,              // Our origin - where we are firing from
+                                        aimForwardVector,               // Aim direction
+                                        100,                            // How long can we fire - distance value
+                                        Object.InputAuthority,          // Who has authority for this raycast (our player authority)
+                                        out var hitInfo,                // Receive some hit information
+                                        collisionLayers,                // Choose which colliders we want to process
+                                        HitOptions.IgnoreInputAuthority // Will consider environmental colliders from Unity (so we can hide behind boxes etc)
+                                        );                              // and stops us shooting ourselves when we move backwards
 
         float hitDistance = 100;
         bool isHitOtherPlayer = false;
@@ -81,7 +82,7 @@ public class WeaponHandler : NetworkBehaviour
             // IMPORTANT NOTE:   Only update the health changes on the server (if we have state authority)
             // Here we assume our network objects have a HPHandler script attached (REQUIRED)
             if (Object.HasStateAuthority)
-                hitInfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage();
+                hitInfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(networkPlayer.nickName.ToString());
 
             isHitOtherPlayer = true;
         }
@@ -143,4 +144,5 @@ public class WeaponHandler : NetworkBehaviour
         if (!Object.HasInputAuthority)
             fireParticleSystem.Play();
     }
+
 }

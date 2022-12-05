@@ -26,6 +26,8 @@ public class HPHandler : NetworkBehaviour
     const byte startingHP = 5;
 
     // Other Components
+    NetworkInGameMessages networkInGameMessages;
+    NetworkPlayer networkPlayer;
     CharacterMovementHandler characterMovementHandler;
     HitboxRoot hitboxRoot;      // Used to prevent hitting the player twice - when dead we'll just disable it 
                                 // Could use a despawn / respawn setup but for now we'll just use this
@@ -34,6 +36,8 @@ public class HPHandler : NetworkBehaviour
 
     private void Awake()
     {
+        networkInGameMessages = GetComponent<NetworkInGameMessages>();
+        networkPlayer = GetComponent<NetworkPlayer>();
         characterMovementHandler = GetComponent<CharacterMovementHandler>();
         hitboxRoot = GetComponentInChildren<HitboxRoot>();
     }
@@ -71,7 +75,7 @@ public class HPHandler : NetworkBehaviour
     }
 
     // NOTE:  Function should only be called by server
-    public void OnTakeDamage()
+    public void OnTakeDamage(string damageCausedByPlayerNickName)
     {
         // Only take damage if we're alive
         if (isDead)
@@ -83,6 +87,9 @@ public class HPHandler : NetworkBehaviour
         // Player Died
         if (HP <= 0)
         {
+            // Tell the server to send a global chat message to all clients ->   KILLER killed VICTIM
+            networkInGameMessages.SendInGameRPCMessage(damageCausedByPlayerNickName, $"killed <b>{networkPlayer.nickName.ToString()}</b>");
+
             isDead = true;              
             StartCoroutine(ServerReviveCoRoutine());    // Call the respawn coroutine
 
