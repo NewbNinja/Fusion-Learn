@@ -6,21 +6,28 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
 {
     bool isPublicJoinMessageSent = false;
 
+
     // Cached Objects
     public TextMeshProUGUI playerNickNameTM;
     public Transform playerModel;
     public LocalCameraHandler localCameraHandler;
     public GameObject localUI;
 
+
     // Other Components
     NetworkInGameMessages networkInGameMessages;
 
+
     public static NetworkPlayer Local { get; set; }     // Save our local network player object in Local
+
 
     // NETWORK VARIABLES
     [Networked(OnChanged = nameof(OnNickNameChanged))]      // React to the name change on the network by listening for the call OnNickNameChanged
     public NetworkString<_16> nickName { get; set; }        // MAX SIZE of 16 characters
 
+
+    // REMOTE Client Token Hash
+    [Networked] public int token { get; set; }
 
     void Awake()
     {
@@ -34,6 +41,8 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
         // NOTE:  Without performing this check we would affect EVERY player object, not what we want
         if (Object.HasInputAuthority)
         {
+            // WE ARE THE LOCAL PLAYER
+
             Local = this;
 
             // USAGE:   Prevents player model blocking view of  the camera on player prefab by changing the render layer of the local players model 
@@ -43,29 +52,37 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
             Utils.SetRenderLayerInChildren(playerModel, LayerMask.NameToLayer("LocalPlayerModel"));
 
             // Disable Main Camera
-            //Camera.main.gameObject.SetActive(false);
+            if (Camera.main != null)
+                Camera.main.gameObject.SetActive(false);
 
-            // UPGRADE NOTE:   We could use a GameManager or something to locally store/change our nickname but we'll use player prefs for now
-            RPC_SetNickName(PlayerPrefs.GetString("PlayerNickname"));
+            // Enable ONE audio listener
+            AudioListener audioListener = GetComponentInChildren<AudioListener>(true);
+            audioListener.enabled = true;
 
-            Debug.Log("Spawned local player");
+
+            localCameraHandler.localCamera.enabled = true;  // Enable the local camera
+            localCameraHandler.transform.parent = null;     // Detach local camera from our model
+            localUI.SetActive(true);                        // Enable UI for local player
+
+
+            RPC_SetNickName(GameManager.instance.playerNickname);   // Get our chosen nickname
+
+            Debug.Log($"{Time.time}:  NetworkPlayer.Spawned():   Spawned local player");
         }
         else
         {
-            // IF WE ARE NOT THE LOCAL PLAYER
+            // WE ARE NOT THE LOCAL PLAYER
 
-            // Disable the camera if we are not the local player
-            Camera localCamera = GetComponentInChildren<Camera>();
-            localCamera.enabled = false;
+            localCameraHandler.localCamera.enabled = false;     // Disable the local camera        
+            localUI.SetActive(false);                           // Disable UI for remote player
 
             // Disable all other audio listeners EXCEPT local players Audio Listener
             AudioListener audioListener = GetComponentInChildren<AudioListener>();
             audioListener.enabled = false;
 
-            // Disable UI for remote player
-            localUI.SetActive(false);
 
-            Debug.Log("Spawned remote player");
+
+            Debug.Log($"{Time.time}:  NetworkPlayer.Spawned():   Spawned remote player");
         }
 
         // Set the Network Object associated with this player
@@ -127,5 +144,14 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
             networkInGameMessages.SendInGameRPCMessage(nickName, "joined");
             isPublicJoinMessageSent = true;
         }
+    }
+
+
+    void OnDestroy()
+    {
+        // If we're destroyed (during host migration / reconnection),
+        // remove the camera as we will be assigned a new one with the new network player
+        if (localCameraHandler != null)
+            Destroy(localCameraHandler.gameObject);
     }
 }

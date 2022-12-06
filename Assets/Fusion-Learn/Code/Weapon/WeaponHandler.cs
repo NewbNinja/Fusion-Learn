@@ -55,13 +55,14 @@ public class WeaponHandler : NetworkBehaviour
         StartCoroutine(FireEffectCoRoutine());      // Fire (tells server we're firing + Plays the muzzle flash particle system)
 
         // SHOOTING using Raycasts and Lag Compensation
-        Runner.LagCompensation.Raycast( aimPoint.position,              // Our origin - where we are firing from
+        Runner.LagCompensation.Raycast(aimPoint.position,              // Our origin - where we are firing from
                                         aimForwardVector,               // Aim direction
                                         100,                            // How long can we fire - distance value
                                         Object.InputAuthority,          // Who has authority for this raycast (our player authority)
                                         out var hitInfo,                // Receive some hit information
                                         collisionLayers,                // Choose which colliders we want to process
-                                        HitOptions.IgnoreInputAuthority // Will consider environmental colliders from Unity (so we can hide behind boxes etc)
+                                        HitOptions.IncludePhysX |       // Will consider environmental colliders from Unity (so we can hide behind boxes etc)
+                                        HitOptions.IgnoreInputAuthority // Will prevent an error where we can hit ourselves        
                                         );                              // and stops us shooting ourselves when we move backwards
 
         float hitDistance = 100;

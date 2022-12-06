@@ -20,6 +20,8 @@ public class MainMenuUIHandler : MonoBehaviour
         PlayerPrefs.SetString("PlayerNickname", inputField.text);
         PlayerPrefs.Save();
 
+        GameManager.instance.playerNickname = inputField.text;
+
         SceneManager.LoadScene("Game");
     }
 }

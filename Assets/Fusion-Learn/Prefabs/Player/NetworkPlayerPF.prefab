@@ -253,7 +253,7 @@ GameObject:
   - component: {fileID: 6639621990636432595}
   m_Layer: 0
   m_Name: Camera
-  m_TagString: Untagged
+  m_TagString: LocalPlayerCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -383,6 +383,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cameraAnchorPoint: {fileID: 1201980489}
+  localCamera: {fileID: 0}
 --- !u!1 &3703448641771890298
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,6 +716,7 @@ MonoBehaviour:
     _length: 0
     _data:
       Data: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  _token: 0
 --- !u!114 &4103981814606338701
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -860,6 +862,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
   _isDead: 0
+  skipSettingStartValues: 0
   uiOnHitColor: {r: 1, g: 0, b: 0.06837177, a: 0.7254902}
   uiOnHitImage: {fileID: 2277573802799857275}
   bodyMeshRenderer: {fileID: 2275795106916165785}

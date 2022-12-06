@@ -11,7 +11,7 @@ public class LocalCameraHandler : MonoBehaviour
     float cameraRotationY = 0;      //
 
     // Other Components
-    Camera localCamera;
+    public Camera localCamera;
     NetworkCharacterControllerPrototypeCustom networkCharacterControllerPrototypeCustom;
 
 
@@ -24,11 +24,8 @@ public class LocalCameraHandler : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        // We deactivate ALL other player cameras in NetworkPlayer.Spawned()
-        // so if the camera is enabled, then this must be our local object
-        // DETACH the camera from our Transform to prevent lag jitter
-        if (localCamera.enabled)
-            localCamera.transform.parent = null;
+        cameraRotationX = GameManager.instance.cameraViewRotation.x;
+        cameraRotationY = GameManager.instance.cameraViewRotation.y;
     }
 
     // Called AFTER the regular Update
@@ -56,5 +53,17 @@ public class LocalCameraHandler : MonoBehaviour
     public void SetViewInputVector(Vector2 viewInput)
     {
         this.viewInput = viewInput;
+    }
+
+    private void OnDestroy()
+    {
+        // Make sure we're the LOCAL camera (our clients cam) and save the current view before we destroy
+        // so we can use it again when we reconnect after a disconnection / host migration
+        
+        if (cameraRotationX != 0 && cameraRotationY != 0)
+        {
+            GameManager.instance.cameraViewRotation.x = cameraRotationX;
+            GameManager.instance.cameraViewRotation.y = cameraRotationY;
+        }
     }
 }

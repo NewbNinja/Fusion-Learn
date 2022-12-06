@@ -13,6 +13,7 @@ public class HPHandler : NetworkBehaviour
     public bool isDead { get; set; }
 
     bool isInitialized = false;
+    public bool skipSettingStartValues = false;
 
     // Screen flash on damage taken
     public Color uiOnHitColor;
@@ -45,10 +46,13 @@ public class HPHandler : NetworkBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        HP = startingHP;
-        isDead = false;
-        defaultMeshBodyColor = bodyMeshRenderer.material.color;
+        if (!skipSettingStartValues)
+        {
+            HP = startingHP;
+            isDead = false;
+        }
 
+        defaultMeshBodyColor = bodyMeshRenderer.material.color;
         isInitialized = true;
     }
 
