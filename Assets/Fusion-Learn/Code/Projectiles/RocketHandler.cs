@@ -17,7 +17,7 @@ public class RocketHandler : NetworkBehaviour
     [SerializeField] float timeToLive = 10f;
 
     //Rocket info
-    [SerializeField] float rocketSpeed = 50f;
+    //[SerializeField] float rocketSpeed = 50f;
     [SerializeField] byte damagePerRocket = 40;
     [SerializeField] float blastRadius = 1f;
     [SerializeField] float hitRadius = 0.1f;
@@ -47,8 +47,7 @@ public class RocketHandler : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        float a = this.rocketSpeed;
-        transform.position += transform.forward * Runner.DeltaTime * 0.1f;
+        transform.position += transform.forward * Runner.DeltaTime * 30f;
 
         // SERVER:   Handle ROCKET objects
         if (Object.HasStateAuthority)
