@@ -4,26 +4,52 @@ using UnityEngine;
 
 public class WeaponHandler : NetworkBehaviour
 {
+    [Header("Prefabs")]
+    public GrenadeHandler grenadePrefab;
+    public RocketHandler rocketPrefab;
+
+    [Header("Effects")]
+    public ParticleSystem fireParticleSystem;   // Muzzle flash particles
+
+    [Header("Aim")]
+    public Transform aimPoint;                  // Position we're firing from
+
+    [Header("Primary Weapon Info")]
+    [SerializeField] private float bulletDistance = 56f;
+
+    [Header("Collision")]
+    public LayerMask collisionLayers;           // Holds all collision layers 
+
+    [Header("Timing")]
+    [SerializeField] private float primaryFireDelay = 0.15f;        // Main Fire Rate Regulator
+    [SerializeField] TickTimer grenadeFireDelay = TickTimer.None;   // <--  THE CORRECT WAY TO USE NETWORK TIMERS (Dont use CoRoutines)
+    [SerializeField] TickTimer rocketFireDelay = TickTimer.None;   
+    float lastTimeFired = 0;
+
+    [Header("Other Components")]
+    HPHandler hpHandler;
+    NetworkPlayer networkPlayer;
+    NetworkObject networkObject;
+
+    // Weapon Info
+    [SerializeField] private byte baseWeaponDamageAmount = 10;
+    [SerializeField] private float grenadeUseDelay = 5.0f;
+    [SerializeField] private float grenadeVelocity = 15f;
+
+    public byte BaseWeaponDamageAmount { get; set; }
+
+
     // This is a FUSION network function which updates all clients
     [Networked(OnChanged = nameof(OnFireChanged))]
     public bool isFiring { get; set; }
 
-    public ParticleSystem fireParticleSystem;   // Muzzle flash particles
-    public Transform aimPoint;                  // Position we're firing from
-    public LayerMask collisionLayers;           // Holds all collision layers 
-
-    [SerializeField] private float fireDelay = 0.15f;
-    float lastTimeFired = 0;        // Fire Rate
-
-    // Other Components
-    HPHandler hpHandler;
-    NetworkPlayer networkPlayer;
 
 
     void Awake()
     {
         hpHandler = GetComponent<HPHandler>();
         networkPlayer = GetComponent<NetworkPlayer>();
+        networkObject = GetComponent<NetworkObject>();
     }
 
     // Fusion refers to this as FUN -- the Fixed Update Network func - works like local Update but for the network
@@ -38,8 +64,14 @@ public class WeaponHandler : NetworkBehaviour
         // Get the input from the network
         if (GetInput(out NetworkInputData networkInputData))
         {
-            if (networkInputData.isFirePressed)
-                Fire(networkInputData.aimForwardVector);        
+            if (networkInputData.isFireButtonPressed)
+                Fire(networkInputData.aimForwardVector);
+
+            if (networkInputData.isGrenadeFireButtonPressed)
+                FireGrenade(networkInputData.aimForwardVector);
+
+            if (networkInputData.isRocketFireButtonPressed)
+                FireRocket(networkInputData.aimForwardVector);
         }
     }
 
@@ -49,15 +81,15 @@ public class WeaponHandler : NetworkBehaviour
     void Fire(Vector3 aimForwardVector)
     {
         // Fire Rate Limiter - if fire delay has NOT elapsed, dont fire
-        if (Time.time - lastTimeFired < fireDelay)
+        if (Time.time - lastTimeFired < primaryFireDelay)
             return;
 
         StartCoroutine(FireEffectCoRoutine());      // Fire (tells server we're firing + Plays the muzzle flash particle system)
 
         // SHOOTING using Raycasts and Lag Compensation
-        Runner.LagCompensation.Raycast(aimPoint.position,              // Our origin - where we are firing from
+        Runner.LagCompensation.Raycast(aimPoint.position,               // Our origin - where we are firing from
                                         aimForwardVector,               // Aim direction
-                                        100,                            // How long can we fire - distance value
+                                        66,                 // How long can we fire - distance value
                                         Object.InputAuthority,          // Who has authority for this raycast (our player authority)
                                         out var hitInfo,                // Receive some hit information
                                         collisionLayers,                // Choose which colliders we want to process
@@ -65,7 +97,7 @@ public class WeaponHandler : NetworkBehaviour
                                         HitOptions.IgnoreInputAuthority // Will prevent an error where we can hit ourselves        
                                         );                              // and stops us shooting ourselves when we move backwards
 
-        float hitDistance = 100;
+        float hitDistance = 76;
         bool isHitOtherPlayer = false;
 
 
@@ -83,7 +115,7 @@ public class WeaponHandler : NetworkBehaviour
             // IMPORTANT NOTE:   Only update the health changes on the server (if we have state authority)
             // Here we assume our network objects have a HPHandler script attached (REQUIRED)
             if (Object.HasStateAuthority)
-                hitInfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(networkPlayer.nickName.ToString());
+                hitInfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(networkPlayer.nickName.ToString(), baseWeaponDamageAmount);
 
             isHitOtherPlayer = true;
         }
@@ -104,6 +136,53 @@ public class WeaponHandler : NetworkBehaviour
         lastTimeFired = Time.time;                  // Record the time we fired for fire rate rule
     }
 
+
+    void FireGrenade(Vector3 aimForwardVector)
+    {
+        // Check that we have not recently thrown a grenade
+        if (grenadeFireDelay.ExpiredOrNotRunning(Runner))
+        {
+            // Spawn our grenade
+            Runner.Spawn(   grenadePrefab,                                  
+                            aimPoint.position + aimForwardVector * 1.5f,    // stops grenade being stuck inside our player collider
+                            Quaternion.LookRotation(aimForwardVector),      // not really relevant for grenade as its just a rigidbody
+                            Object.InputAuthority,                          // pass our input authority
+                            (runner, spawnedGrenade) =>                     // Execute lambda code below:
+                            {
+                                spawnedGrenade.GetComponent<GrenadeHandler>().Throw(aimForwardVector * grenadeVelocity,         // direction + velocity (defaults to 15)
+                                                                                    Object.InputAuthority,                      // pass our input authority
+                                                                                    networkPlayer.nickName.ToString());         // our networkname
+                            });
+
+            // Start a new timer to avoid grenade spamming
+            grenadeFireDelay = TickTimer.CreateFromSeconds(Runner, grenadeUseDelay);       // 1 second delay
+        }
+    }
+
+
+    void FireRocket(Vector3 aimForwardVector)
+    {
+        // Check that we have not recently thrown a grenade
+        if (rocketFireDelay.ExpiredOrNotRunning(Runner))
+        {
+            //Vector3 addY = new Vector3(0, 1, 0);        // Fire a little further up as if firing from shoulder for rocket
+
+            // Spawn our rocket
+            Runner.Spawn(   rocketPrefab,
+                            aimPoint.position + aimForwardVector * 1.5f,     // stops grenade being stuck inside our player collider
+                            Quaternion.LookRotation(aimForwardVector),              // not really relevant for grenade as its just a rigidbody
+                            Object.InputAuthority,                                  // pass our input authority
+                            (runner, spawnedRocket) =>                              // Execute lambda code below:
+                            {
+                                spawnedRocket.GetComponent<RocketHandler>().Fire(Object.InputAuthority,                  // pass our input authority
+                                                                                    networkObject,                          // Network Object of the player who fired
+                                                                                    networkPlayer.nickName.ToString());     // our networkname
+                            });
+
+            // Start a new timer to avoid grenade spamming
+            rocketFireDelay = TickTimer.CreateFromSeconds(Runner, 3);       // 3 second delay
+        }
+    }
 
     // STEP 3:  CALLS COROUTINE TO CHANGE NETWORK VARIABLE isFiring TO TRUE
     // Coroutine - Tell the server we're firing

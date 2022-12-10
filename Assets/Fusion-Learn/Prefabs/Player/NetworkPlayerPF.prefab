@@ -586,7 +586,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8957214548248345267}
   - component: {fileID: 8666467278089890786}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: HitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -822,13 +822,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interpolationDataSource: 0
-  _isFiring: 0
+  grenadePrefab: {fileID: 7897961252604378101, guid: b42bab57a56ff9f4ba1737e56b115534,
+    type: 3}
+  rocketPrefab: {fileID: 8641158510073857347, guid: 6915983b4f1656848abffd57d72d1337,
+    type: 3}
   fireParticleSystem: {fileID: 6732421922514860069}
   aimPoint: {fileID: 1201980489}
   collisionLayers:
     serializedVersion: 2
     m_Bits: 129
-  fireDelay: 0.15
+  primaryFireDelay: 0.15
+  _isFiring: 0
 --- !u!114 &6987133173096660699
 MonoBehaviour:
   m_ObjectHideFlags: 0

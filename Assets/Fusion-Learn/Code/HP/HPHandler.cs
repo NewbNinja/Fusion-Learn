@@ -24,7 +24,8 @@ public class HPHandler : NetworkBehaviour
     public GameObject playerModel;
     public GameObject deathGameObjectPrefab;    // Death particle system
 
-    const byte startingHP = 5;
+    const byte startingHP = 100;
+    byte defaultBulletDamageAmount = 10;
 
     // Other Components
     NetworkInGameMessages networkInGameMessages;
@@ -79,13 +80,14 @@ public class HPHandler : NetworkBehaviour
     }
 
     // NOTE:  Function should only be called by server
+    // This version of OnTakeDamage is only called if no damage parameter is passed when function is called (default damage 10 per hit)
     public void OnTakeDamage(string damageCausedByPlayerNickName)
     {
         // Only take damage if we're alive
         if (isDead)
             return;
 
-        HP -= 1;
+        HP -= defaultBulletDamageAmount;
         Debug.Log($"{Time.time}:  {transform.name} took damage!  HP:  {HP}");
 
         // Player Died
@@ -95,6 +97,36 @@ public class HPHandler : NetworkBehaviour
             networkInGameMessages.SendInGameRPCMessage(damageCausedByPlayerNickName, $"killed <b>{networkPlayer.nickName.ToString()}</b>");
 
             isDead = true;              
+            StartCoroutine(ServerReviveCoRoutine());    // Call the respawn coroutine
+
+            Debug.Log($"{Time.time}:  {transform.name} DIED!");
+        }
+    }
+
+    // NOTE:  Function should only be called by server
+    public void OnTakeDamage(string damageCausedByPlayerNickName, byte damageAmount)
+    {
+        // Only take damage if we're alive
+        if (isDead)
+            return;
+
+
+        // Because we're using BYTE (0-255) it cannot be negative which means if we apply -100 damage
+        // the number will loop around and display something like 160 (assuming we had 5 hp when we were hit)
+        // For this reason we must check to see if the HP will be <= 0, if so, just set HP to damage of the grenade
+        if (damageAmount > HP)
+            damageAmount = HP;
+
+        HP -= damageAmount;
+        Debug.Log($"{Time.time}:  {transform.name} took {damageAmount} damage!  HP:  {HP}");
+
+        // Player Died
+        if (HP <= 0)
+        {
+            // Tell the server to send a global chat message to all clients ->   KILLER killed VICTIM
+            networkInGameMessages.SendInGameRPCMessage(damageCausedByPlayerNickName, $"killed <b>{networkPlayer.nickName.ToString()}</b>");
+
+            isDead = true;
             StartCoroutine(ServerReviveCoRoutine());    // Call the respawn coroutine
 
             Debug.Log($"{Time.time}:  {transform.name} DIED!");

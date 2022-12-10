@@ -8,6 +8,8 @@ public class CharacterInputHandler : MonoBehaviour
     Vector2 viewInputVector = Vector2.zero;
     bool isJumpButtonPressed = false;
     bool isFireButtonPressed = false;
+    bool isGrenadeFireButtonPressed = false;
+    bool isRocketFireButtonPressed = false;
 
     // Other Components
     LocalCameraHandler localCameraHandler;
@@ -51,6 +53,16 @@ public class CharacterInputHandler : MonoBehaviour
         if (Input.GetButtonDown("Fire1"))
             isFireButtonPressed = true;
 
+        // Fire Rocket
+        if (Input.GetButtonDown("Fire2"))
+            isRocketFireButtonPressed = true;
+
+        // Throw Grenade
+        if (Input.GetKeyDown(KeyCode.F))
+            isGrenadeFireButtonPressed = true;
+
+
+
         // Set View
         localCameraHandler.SetViewInputVector(viewInputVector);
     }
@@ -64,15 +76,22 @@ public class CharacterInputHandler : MonoBehaviour
         // HOW IT WORKS:
         // Update() collects all the frames input data and when the Network Update function is
         // ready for the data we simply pass it along by returning the networkInputData
-
+        
         NetworkInputData networkInputData = new NetworkInputData();
-        networkInputData.aimForwardVector = localCameraHandler.transform.forward;   // Aim data
-        networkInputData.movementInput = moveInputVector;       // Move data
-        networkInputData.isFirePressed = isFireButtonPressed;   // Firing data
-        networkInputData.isJumpPressed = isJumpButtonPressed;   // Jump data
 
-        isFireButtonPressed = false;                            // RESET the fire1 trigger
-        isJumpButtonPressed = false;                            // RESET the jump trigger 
+        networkInputData.aimForwardVector = localCameraHandler.transform.forward;   // Aim data
+        networkInputData.movementInput = moveInputVector;                           // Move data
+
+        networkInputData.isFireButtonPressed = isFireButtonPressed;                 // Firing data
+        networkInputData.isJumpButtonPressed = isJumpButtonPressed;                 // Jump data
+        networkInputData.isGrenadeFireButtonPressed = isGrenadeFireButtonPressed;   // Throw grenade data
+        networkInputData.isRocketFireButtonPressed = isRocketFireButtonPressed;     // Throw grenade data
+
+        isFireButtonPressed = false;                                                // Reset all triggers
+        isJumpButtonPressed = false;                                                //
+        isGrenadeFireButtonPressed = false;                                         //
+        isRocketFireButtonPressed = false;                                          //
+
         return networkInputData;
     }
 }

@@ -64,7 +64,7 @@ public class CharacterMovementHandler : NetworkBehaviour
             networkCharacterControllerPrototypeCustom.Move(moveDirection);
 
             // Jump
-            if (networkInputData.isJumpPressed)
+            if (networkInputData.isJumpButtonPressed)
                 networkCharacterControllerPrototypeCustom.Jump();
 
             // Check if we've fallen of the map
