@@ -108,7 +108,4 @@ public class CharacterMovementHandler : NetworkBehaviour
     {
         networkCharacterControllerPrototypeCustom.Controller.enabled = isEnabled;
     }
-
-
-
 }

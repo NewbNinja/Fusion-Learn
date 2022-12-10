@@ -18,7 +18,7 @@ public class GrenadeHandler : NetworkBehaviour
 
     // Grenade info
     [SerializeField] byte damageAmount = 80;
-    [SerializeField] int explosionRadius = 4;
+    [SerializeField] int explosionRadius = 6;
 
 
     // Timing

@@ -10,6 +10,7 @@ public class CharacterInputHandler : MonoBehaviour
     bool isFireButtonPressed = false;
     bool isGrenadeFireButtonPressed = false;
     bool isRocketFireButtonPressed = false;
+    bool isSpawnObjectButtonPressed = false;
 
     // Other Components
     LocalCameraHandler localCameraHandler;
@@ -61,6 +62,10 @@ public class CharacterInputHandler : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.F))
             isGrenadeFireButtonPressed = true;
 
+        // Spawn Object
+        if (Input.GetKeyDown(KeyCode.P))
+            isSpawnObjectButtonPressed = true;
+
 
 
         // Set View
@@ -85,12 +90,14 @@ public class CharacterInputHandler : MonoBehaviour
         networkInputData.isFireButtonPressed = isFireButtonPressed;                 // Firing data
         networkInputData.isJumpButtonPressed = isJumpButtonPressed;                 // Jump data
         networkInputData.isGrenadeFireButtonPressed = isGrenadeFireButtonPressed;   // Throw grenade data
-        networkInputData.isRocketFireButtonPressed = isRocketFireButtonPressed;     // Throw grenade data
+        networkInputData.isRocketFireButtonPressed = isRocketFireButtonPressed;     // Fire rocket data
+        networkInputData.isSpawnObjectButtonPressed = isSpawnObjectButtonPressed;   // Spawn object data
 
         isFireButtonPressed = false;                                                // Reset all triggers
         isJumpButtonPressed = false;                                                //
         isGrenadeFireButtonPressed = false;                                         //
         isRocketFireButtonPressed = false;                                          //
+        isSpawnObjectButtonPressed = false;                                          //
 
         return networkInputData;
     }

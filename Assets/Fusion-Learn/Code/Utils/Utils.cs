@@ -8,7 +8,8 @@ public static class Utils
     /// <returns>Vector3 position (rand, 0, rand)</returns>
     public static Vector3 GetRandomSpawnPoint()
     {
-        return new Vector3(Random.Range(-20, 20), 15, Random.Range(-20, 20));
+        return new Vector3(Random.Range(-50, 50), 15, Random.Range(-50, 50));   // Small Farm Map Random
+        //return new Vector3(Random.Range(-20, 20), 15, Random.Range(-20, 20));   // small map random
     }
 
 

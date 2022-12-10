@@ -15,13 +15,13 @@ public class WeaponHandler : NetworkBehaviour
     public Transform aimPoint;                  // Position we're firing from
 
     [Header("Primary Weapon Info")]
-    [SerializeField] private float bulletDistance = 56f;
+    [SerializeField] private float bulletDistance = 50f;
 
     [Header("Collision")]
     public LayerMask collisionLayers;           // Holds all collision layers 
 
     [Header("Timing")]
-    [SerializeField] private float primaryFireDelay = 0.15f;        // Main Fire Rate Regulator
+    [SerializeField] private float primaryFireDelay = 0.1f;         // Main Fire Rate Regulator
     [SerializeField] TickTimer grenadeFireDelay = TickTimer.None;   // <--  THE CORRECT WAY TO USE NETWORK TIMERS (Dont use CoRoutines)
     [SerializeField] TickTimer rocketFireDelay = TickTimer.None;   
     float lastTimeFired = 0;
@@ -34,7 +34,7 @@ public class WeaponHandler : NetworkBehaviour
     // Weapon Info
     [SerializeField] private byte baseWeaponDamageAmount = 10;
     [SerializeField] private float grenadeUseDelay = 5.0f;
-    [SerializeField] private float grenadeVelocity = 15f;
+    [SerializeField] private float grenadeVelocity = 20f;
 
     public byte BaseWeaponDamageAmount { get; set; }
 
@@ -72,6 +72,9 @@ public class WeaponHandler : NetworkBehaviour
 
             if (networkInputData.isRocketFireButtonPressed)
                 FireRocket(networkInputData.aimForwardVector);
+
+            if (networkInputData.isSpawnObjectButtonPressed)
+                SpawnObject(networkInputData.aimForwardVector);
         }
     }
 
@@ -89,7 +92,7 @@ public class WeaponHandler : NetworkBehaviour
         // SHOOTING using Raycasts and Lag Compensation
         Runner.LagCompensation.Raycast(aimPoint.position,               // Our origin - where we are firing from
                                         aimForwardVector,               // Aim direction
-                                        66,                 // How long can we fire - distance value
+                                        bulletDistance,                 // How long can we fire - distance value
                                         Object.InputAuthority,          // Who has authority for this raycast (our player authority)
                                         out var hitInfo,                // Receive some hit information
                                         collisionLayers,                // Choose which colliders we want to process
@@ -97,7 +100,7 @@ public class WeaponHandler : NetworkBehaviour
                                         HitOptions.IgnoreInputAuthority // Will prevent an error where we can hit ourselves        
                                         );                              // and stops us shooting ourselves when we move backwards
 
-        float hitDistance = 76;
+        float hitDistance = bulletDistance;
         bool isHitOtherPlayer = false;
 
 
@@ -183,6 +186,14 @@ public class WeaponHandler : NetworkBehaviour
             rocketFireDelay = TickTimer.CreateFromSeconds(Runner, 3);       // 3 second delay
         }
     }
+
+
+    void SpawnObject(Vector3 aimForwardVector)
+    {
+        // ###TODO:   Continue from here tomorrow!!!
+        //Runner.Spawn(aimForwardVector,)
+    }
+
 
     // STEP 3:  CALLS COROUTINE TO CHANGE NETWORK VARIABLE isFiring TO TRUE
     // Coroutine - Tell the server we're firing
