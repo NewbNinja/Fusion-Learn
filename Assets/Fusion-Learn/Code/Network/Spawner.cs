@@ -16,11 +16,13 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
 
     // Other components
     CharacterInputHandler characterInputHandler;
+    SessionListUIHandler sessionListUIHandler;
 
 
     private void Awake()
     {
         mapTokenIDWithNetworkPlayer = new Dictionary<int, NetworkPlayer>();
+        sessionListUIHandler = FindObjectOfType<SessionListUIHandler>(true);        // Include TRUE to find objects that ARE NOT currently enabled but do exist
     }
 
     // Helper Function
@@ -120,7 +122,28 @@ public class Spawner : MonoBehaviour, INetworkRunnerCallbacks
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data) { }
     public void OnSceneLoadDone(NetworkRunner runner) { }
     public void OnSceneLoadStart(NetworkRunner runner) { }
-    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
+    public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) 
+    {
+        // Only update the list of sessions when the session list UI handler is active
+        if (sessionListUIHandler == null)
+            return;
+
+        if (sessionList.Count == 0)
+        {
+            Debug.Log($"{Time.time}:  Joined Lobby - No Sessions Found");
+            sessionListUIHandler.OnNoSessionsFound();
+        }
+        else
+        {
+            sessionListUIHandler.ClearList();
+
+            foreach (SessionInfo sessionInfo in sessionList)
+            {
+                sessionListUIHandler.AddToList(sessionInfo);
+                Debug.Log($"{Time.time}:  Found session: {sessionInfo.Name}   Player Count: {sessionInfo.PlayerCount}");
+            }
+        }
+    }
     public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { Debug.Log("OnShutdown"); }
     public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 
