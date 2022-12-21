@@ -34,7 +34,12 @@ public class WeaponHandler : NetworkBehaviour
     // Weapon Info
     [SerializeField] private byte baseWeaponDamageAmount = 10;
     [SerializeField] private float grenadeUseDelay = 5.0f;
-    [SerializeField] private float grenadeVelocity = 20f;
+    [SerializeField] private float grenadeVelocity = 25f;
+
+    //[SerializeField] private ParticleSystem impactParticleSystem;
+    [SerializeField] private TrailRenderer bulletTrail;                                          // Bullet trail
+    [SerializeField] private Vector3 bulletSpreadVariance = new Vector3(0.05f, 0.05f, 0.05f);    // Bullet Spread
+    [SerializeField] private bool addBulletSpread = false;
 
     public byte BaseWeaponDamageAmount { get; set; }
 
@@ -42,6 +47,7 @@ public class WeaponHandler : NetworkBehaviour
     // This is a FUSION network function which updates all clients
     [Networked(OnChanged = nameof(OnFireChanged))]
     public bool isFiring { get; set; }
+
 
 
 
@@ -100,6 +106,20 @@ public class WeaponHandler : NetworkBehaviour
                                         HitOptions.IgnoreInputAuthority // Will prevent an error where we can hit ourselves        
                                         );                              // and stops us shooting ourselves when we move backwards
 
+
+        // ### TODO: DEBUGGING NULL EXCEPTION - TRAILRENDERER - START FROM HERE WHEN LOOKING INTO THE TRAIL RENDERER FIX
+        //--------------------------------------------------------------------------------------------------------------
+
+        //TrailRenderer trail = Instantiate(bulletTrail, aimPoint.position, Quaternion.identity);     // Bullet trails
+
+        //TrailRenderer r = trail;                        
+        //LagCompensatedHit lch = hitInfo;
+
+        //if (hitInfo.Hitbox != null)
+        //    StartCoroutine(SpawnTrail(trail, hitInfo));     
+
+        //--------------------------------------------------------------------------------------------------------------
+
         float hitDistance = bulletDistance;
         bool isHitOtherPlayer = false;
 
@@ -139,6 +159,47 @@ public class WeaponHandler : NetworkBehaviour
         lastTimeFired = Time.time;                  // Record the time we fired for fire rate rule
     }
 
+    // Returns a random direction for our Bullet Spread
+    //private Vector3 GetDirection()
+    //{
+    //    Vector3 direction = transform.forward;
+
+
+    //    if (addBulletSpread)
+    //    {
+    //        direction += new Vector3(
+    //            Random.Range(-bulletSpreadVariance.x, bulletSpreadVariance.x),
+    //            Random.Range(-bulletSpreadVariance.y, bulletSpreadVariance.y),
+    //            Random.Range(-bulletSpreadVariance.z, bulletSpreadVariance.z)
+    //        );
+    //    }
+    //    return direction;
+    //}
+
+
+    //private IEnumerator SpawnTrail(TrailRenderer trail, LagCompensatedHit hit)
+    //{
+    //    float time = 0;
+    //    Vector3 startPosition = trail.transform.position;
+
+
+    //    while (time < 1)
+    //    {
+    //        if (hit.Hitbox == null)
+    //            trail.transform.position = Vector3.Lerp(startPosition, hit.Hitbox.Position, time);
+    //        else
+    //            trail.transform.position = Vector3.Lerp(startPosition, trail.transform.forward * 10f, time);
+
+    //        time += Time.deltaTime / trail.time;
+
+    //        yield return null;
+    //    }
+
+    //    trail.transform.position = hit.Hitbox.Position;       // draw the trail from gun to raycast point
+    //    //Instantiate(impactParticleSystem, hit.Hitbox.Position, Quaternion.LookRotation(hit.Hitbox.Position.normalized));
+
+    //    Destroy(trail.gameObject, trail.time);      // destroy trail after set time
+    //}
 
     void FireGrenade(Vector3 aimForwardVector)
     {

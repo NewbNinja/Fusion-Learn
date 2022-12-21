@@ -61,7 +61,7 @@ public class RocketHandler : NetworkBehaviour
 
             // Check if the rocket has hit anything
             int hitCount = Runner.LagCompensation.OverlapSphere(checkForImpactPoint.position,       // On impact - check position
-                                                                hitRadius,                        // THIS IS THE COLLIDER RADIUS
+                                                                0.1f,                               // THIS IS THE COLLIDER RADIUS
                                                                 firedByPlayerRef,                   // Lag compensation for the player who fired it
                                                                 hits,                               // Return valid hits as a list of List<LagCompensatedHit>
                                                                 collisionLayers,                    // On what layers?
@@ -91,7 +91,7 @@ public class RocketHandler : NetworkBehaviour
             {
                 //Now we need to figure out of anything was within the blast radius
                 hitCount = Runner.LagCompensation.OverlapSphere(checkForImpactPoint.position,
-                                                                blastRadius, 
+                                                                4f, 
                                                                 firedByPlayerRef, 
                                                                 hits, 
                                                                 collisionLayers, HitOptions.None);

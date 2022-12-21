@@ -828,10 +828,19 @@ MonoBehaviour:
     type: 3}
   fireParticleSystem: {fileID: 6732421922514860069}
   aimPoint: {fileID: 1201980489}
+  bulletDistance: 50
   collisionLayers:
     serializedVersion: 2
     m_Bits: 129
   primaryFireDelay: 0.15
+  baseWeaponDamageAmount: 10
+  grenadeUseDelay: 5
+  grenadeVelocity: 20
+  impactParticleSystem: {fileID: 0}
+  bulletTrail: {fileID: 6000747266871518936, guid: c026b5320fb929a4eb6dbf79d8d8df47,
+    type: 3}
+  bulletSpreadVariance: {x: 0.05, y: 0.05, z: 0.05}
+  addBulletSpread: 0
   _isFiring: 0
 --- !u!114 &6987133173096660699
 MonoBehaviour:

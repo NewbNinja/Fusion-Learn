@@ -18,7 +18,7 @@ public class GrenadeHandler : NetworkBehaviour
 
     // Grenade info
     [SerializeField] byte damageAmount = 80;
-    [SerializeField] int explosionRadius = 6;
+    [SerializeField] int explosionRadius = 20;
 
 
     // Timing
@@ -57,7 +57,7 @@ public class GrenadeHandler : NetworkBehaviour
             if (explodeTickTimer.Expired(Runner))
             {
                 int hitCount = Runner.LagCompensation.OverlapSphere(transform.position,         // On explode - check position
-                                                                    explosionRadius,                          // Check for hits within 4 units
+                                                                    8f,                        // Check for hits within 4 units
                                                                     thrownByPlayerRef,          // Lag compensation for the player who threw it
                                                                     hits,                       // Return valid hits as a list of List<LagCompensatedHit>
                                                                     collisionLayers);           // On what layers?
