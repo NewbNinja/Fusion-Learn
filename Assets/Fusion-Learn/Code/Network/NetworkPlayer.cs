@@ -14,6 +14,8 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
     public GameObject localUI;
 
 
+
+
     // Other Components
     NetworkInGameMessages networkInGameMessages;
 
@@ -59,8 +61,10 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
             AudioListener audioListener = GetComponentInChildren<AudioListener>(true);
             audioListener.enabled = true;
 
-
-            localCameraHandler.localCamera.enabled = true;  // Enable the local camera
+            // Enable the local camera
+            localCameraHandler.localCamera.enabled = true;   
+            localCameraHandler.gameObject.SetActive(true);
+            
             localCameraHandler.transform.parent = null;     // Detach local camera from our model
             localUI.SetActive(true);                        // Enable UI for local player
 
@@ -74,11 +78,13 @@ public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
             // WE ARE NOT THE LOCAL PLAYER
 
             localCameraHandler.localCamera.enabled = false;     // Disable the local camera        
+            localCameraHandler.gameObject.SetActive(false);
+
             localUI.SetActive(false);                           // Disable UI for remote player
 
             // Disable all other audio listeners EXCEPT local players Audio Listener
-            AudioListener audioListener = GetComponentInChildren<AudioListener>();
-            audioListener.enabled = false;
+/*            AudioListener audioListener = GetComponentInChildren<AudioListener>();
+            audioListener.enabled = false;*/
 
 
 

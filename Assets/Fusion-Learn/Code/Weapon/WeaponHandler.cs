@@ -233,8 +233,8 @@ public class WeaponHandler : NetworkBehaviour
 
             // Spawn our rocket
             Runner.Spawn(   rocketPrefab,
-                            aimPoint.position + aimForwardVector * 1.5f,     // stops grenade being stuck inside our player collider
-                            Quaternion.LookRotation(aimForwardVector),              // not really relevant for grenade as its just a rigidbody
+                            aimPoint.position + aimForwardVector * 1.5f,            // stops rocket being stuck inside our player collider
+                            Quaternion.LookRotation(aimForwardVector),              
                             Object.InputAuthority,                                  // pass our input authority
                             (runner, spawnedRocket) =>                              // Execute lambda code below:
                             {

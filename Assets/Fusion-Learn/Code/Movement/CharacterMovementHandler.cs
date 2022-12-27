@@ -5,6 +5,9 @@ using UnityEngine;
 
 public class CharacterMovementHandler : NetworkBehaviour
 {
+    [Header("Animation")]
+    public Animator characterAnimator;
+
     NetworkCharacterControllerPrototypeCustom networkCharacterControllerPrototypeCustom;
    // Camera localCamera;
     HPHandler hpHandler;
@@ -13,6 +16,7 @@ public class CharacterMovementHandler : NetworkBehaviour
 
     bool isRespawnRequested = false;        // Detects if a respawn request has been called 
 
+    float walkSpeed = 0;        // Used for the animation blend tree:   Idle -> Walk
 
     private void Awake()
     {
@@ -67,8 +71,18 @@ public class CharacterMovementHandler : NetworkBehaviour
             if (networkInputData.isJumpButtonPressed)
                 networkCharacterControllerPrototypeCustom.Jump();
 
+
+            // Animation Blend Tree:   Idle -> Run
+            // Get the walk vector, value between 0 and 1 and apply to the walkSpeed blend tree in the animator
+            Vector2 walkVector = new Vector2(networkCharacterControllerPrototypeCustom.Velocity.x, networkCharacterControllerPrototypeCustom.Velocity.z);
+            walkVector.Normalize();
+            walkSpeed = Mathf.Lerp(walkSpeed, Mathf.Clamp01(walkVector.magnitude), Runner.DeltaTime * 5);   // 5 represent transition time, higher = faster transition
+            characterAnimator.SetFloat("walkSpeed", walkSpeed);
+            
             // Check if we've fallen of the map
             CheckFallRespawn();
+
+
         }
     }
 
